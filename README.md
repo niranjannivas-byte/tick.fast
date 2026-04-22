@@ -1,4 +1,4 @@
-# Clocker
+# tick.fast
 
 Minimal BigTimer-style countdown timer built with Next.js.
 

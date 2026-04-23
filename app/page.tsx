@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
   type Dispatch,
-  type KeyboardEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent,
   type RefObject,
   type SetStateAction
@@ -50,6 +50,8 @@ export default function Home() {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [hasSetValue, setHasSetValue] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isAboutHinted, setIsAboutHinted] = useState(false);
 
   const setTotalSeconds = useMemo(() => {
     const hours = clampNumber(Number.parseInt(hoursInput || "0", 10), 0, MAX_HOURS);
@@ -79,6 +81,21 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, [isRunning]);
 
+  useEffect(() => {
+    if (!isAboutOpen) {
+      return;
+    }
+
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsAboutOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isAboutOpen]);
+
   const setTimer = () => {
     setRemainingSeconds(setTotalSeconds);
     setHasSetValue(setTotalSeconds > 0);
@@ -95,7 +112,7 @@ export default function Home() {
       setter: Dispatch<SetStateAction<string>>,
       nextRef?: RefObject<HTMLInputElement | null>
     ) =>
-    (event: KeyboardEvent<HTMLInputElement>) => {
+    (event: ReactKeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
         event.preventDefault();
         setter((current) => current.padStart(2, "0").slice(-2));
@@ -160,7 +177,16 @@ export default function Home() {
   return (
     <main className="page">
       <section className="timer-card" aria-label="Timer">
-        <h1 className="title">tick.fast</h1>
+        <div className="header">
+          <h1 className="title">tick.fast</h1>
+          <button
+            type="button"
+            className={`about-button${isAboutHinted ? " about-button--hint" : ""}`}
+            onClick={() => setIsAboutOpen(true)}
+          >
+            About
+          </button>
+        </div>
         <p className="timer-display" aria-live="polite">
           {formatTime(remainingSeconds)}
         </p>
@@ -225,6 +251,71 @@ export default function Home() {
           </button>
         </div>
       </section>
+      {isAboutOpen ? (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="About tick.fast"
+          onMouseDown={() => setIsAboutOpen(false)}
+        >
+          <div className="modal" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">About</h2>
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Close about dialog"
+                onClick={() => setIsAboutOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>
+                <strong>tick.fast</strong> is a focused, minimal countdown timer built for clarity and
+                speed.
+              </p>
+              <p>
+                Built by <strong>Niranjan Nivas</strong> and <strong>Pranav Nivas</strong>.
+              </p>
+              <p>
+                We build <strong>high‑quality</strong>, <strong>focused</strong>, <strong>minimal</strong>{" "}
+                products with a strong emphasis on <strong>security</strong>.
+              </p>
+              <div className="contact-grid" aria-label="Contact">
+                <div className="contact-card">
+                  <div className="contact-name">Niranjan Nivas</div>
+                  <div className="contact-value">niranjannivas.k2025@vitstudent.ac.in</div>
+                </div>
+                <div className="contact-card">
+                  <div className="contact-name">Pranav Nivas</div>
+                  <div className="contact-value">pranavnivask25mecs@psnacet.edu.in</div>
+                </div>
+              </div>
+              <p>
+                Built with <strong>Next.js</strong> and hosted on <strong>Vercel</strong>.
+              </p>
+              <p>
+                Tip: type numbers right‑to‑left, press <strong>Enter</strong> to advance, and{" "}
+                <strong>Esc</strong> to close.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      <div
+        className="footer-hint-zone"
+        onMouseEnter={() => setIsAboutHinted(true)}
+        onMouseLeave={() => setIsAboutHinted(false)}
+      >
+        <p className="footer-credit">
+          Made for focus by{' '}
+          Niranjan Nivas
+          {' '}&{' '}
+          Pranav Nivas
+        </p>
+      </div>
     </main>
   );
 }

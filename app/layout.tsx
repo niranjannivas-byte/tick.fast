@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Clocker",
+  title: "TICK.FAST",
   description: "Minimal BigTimer-style countdown timer"
 };
 
